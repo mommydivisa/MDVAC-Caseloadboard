@@ -1,0 +1,740 @@
+<title>MDVAC Caseload Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --surface-2: #f2efe9;
+    --border: rgba(28,25,20,0.11);
+    --text: #201d19;
+    --text-secondary: #635c53;
+    --text-muted: #928a7e;
+    --accent: #2f6f68;
+    --accent-strong: #1e4d47;
+    --accent-wash: rgba(47,111,104,0.10);
+    --good: #1f7a4d;
+    --good-wash: rgba(31,122,77,0.12);
+    --warning: #a56a0a;
+    --warning-wash: rgba(196,140,20,0.14);
+    --danger: #b5433f;
+    --danger-wash: rgba(181,67,63,0.10);
+    --shadow: 0 1px 2px rgba(32,29,25,0.04), 0 8px 24px -12px rgba(32,29,25,0.10);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #15171a;
+      --surface: #1d2023;
+      --surface-2: #24272b;
+      --border: rgba(255,255,255,0.09);
+      --text: #f1efec;
+      --text-secondary: #b3aea6;
+      --text-muted: #837c73;
+      --accent: #5fb0a7;
+      --accent-strong: #86cbc2;
+      --accent-wash: rgba(95,176,167,0.14);
+      --good: #4bbd85;
+      --good-wash: rgba(75,189,133,0.16);
+      --warning: #d9a441;
+      --warning-wash: rgba(217,164,65,0.16);
+      --danger: #e2726e;
+      --danger-wash: rgba(226,114,110,0.14);
+      --shadow: 0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #15171a;
+    --surface: #1d2023;
+    --surface-2: #24272b;
+    --border: rgba(255,255,255,0.09);
+    --text: #f1efec;
+    --text-secondary: #b3aea6;
+    --text-muted: #837c73;
+    --accent: #5fb0a7;
+    --accent-strong: #86cbc2;
+    --accent-wash: rgba(95,176,167,0.14);
+    --good: #4bbd85;
+    --good-wash: rgba(75,189,133,0.16);
+    --warning: #d9a441;
+    --warning-wash: rgba(217,164,65,0.16);
+    --danger: #e2726e;
+    --danger-wash: rgba(226,114,110,0.14);
+    --shadow: 0 1px 2px rgba(0,0,0,0.2), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ background: var(--bg); }
+  body{
+    margin:0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 18px 64px;
+  }
+  h1,h2,h3{ font-family:"Sora","Inter",system-ui,sans-serif; text-wrap: balance; }
+  h1{ font-size: 22px; font-weight:700; margin:0 0 3px; letter-spacing:-0.01em; }
+  .subtitle{ font-size:13.5px; color:var(--text-secondary); margin:0 0 22px; max-width:65ch; }
+
+  .top-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .status-line{ font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px; white-space:nowrap; }
+  .status-dot{ width:7px;height:7px;border-radius:50%; background:var(--good); flex:none; }
+  .status-dot.offline{ background:var(--text-muted); }
+
+  .stats-row{ display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin:18px 0 22px; }
+  .stat-tile{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); }
+  .stat-label{ font-size:11.5px; color:var(--text-secondary); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+  .stat-value{ font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .stat-note{ font-size:11.5px; color:var(--text-muted); margin-top:3px; }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 20px 18px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .card-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .card-title{ font-size:15.5px; font-weight:700; margin:0; }
+  .card-caption{ font-size:12.5px; color:var(--text-secondary); margin:2px 0 0; }
+
+  .recommend-banner{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    background:var(--accent-wash); border:1px solid var(--accent); border-radius:12px;
+    padding:13px 16px; margin-bottom:16px;
+  }
+  .recommend-banner .rb-label{ font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--accent-strong); font-weight:600; }
+  .recommend-banner .rb-names{ font-size:16px; font-weight:700; color:var(--text); }
+  .recommend-banner .rb-detail{ font-size:12.5px; color:var(--text-secondary); margin-left:auto; }
+
+  /* load bars */
+  .load-row{ display:grid; grid-template-columns: 118px 1fr 128px; align-items:center; gap:10px; padding:7px 0; }
+  .load-row + .load-row{ border-top:1px solid var(--border); }
+  .load-cm{ font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .load-cm .badge{
+    font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+    background:var(--good-wash); color:var(--good); border-radius:5px; padding:2px 5px;
+  }
+  .load-track{ position:relative; height:16px; background:var(--surface-2); border-radius:5px; overflow:hidden; }
+  .load-fill{ height:100%; background:var(--accent); border-radius:5px; transition:width .25s ease; }
+  .load-meta{ font-size:12px; color:var(--text-secondary); text-align:right; font-variant-numeric:tabular-nums; }
+  .load-meta b{ color:var(--text); font-weight:700; }
+  .load-meta .oh{ color:var(--warning); }
+
+  /* forms */
+  .form-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:11.5px; color:var(--text-secondary); font-weight:600; }
+  input[type=text], input[type=number], select, textarea{
+    font-family:inherit; font-size:13.5px; color:var(--text);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px;
+    padding:8px 10px; min-width:0;
+  }
+  input:focus, select:focus, textarea:focus, button:focus-visible{
+    outline:2px solid var(--accent); outline-offset:1px;
+  }
+  .field.grow{ flex:1 1 220px; min-width:220px; }
+  .field.grow input{ width:100%; }
+  #f-applicants{ width:96px; }
+  #f-cm{ min-width:170px; }
+  .cm-suggestion{ font-size:11.5px; color:var(--accent-strong); font-weight:600; margin-top:5px; display:flex; align-items:center; gap:4px; }
+  .cm-suggestion::before{ content:"→"; }
+  .cm-suggestion.match{ color:var(--good); }
+  .btn{
+    font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    border-radius:8px; padding:8px 15px; border:1px solid transparent;
+    display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary:hover{ background:var(--accent-strong); }
+  .btn-ghost{ background:transparent; color:var(--text-secondary); border-color:var(--border); }
+  .btn-ghost:hover{ color:var(--text); border-color:var(--text-muted); }
+  .btn-ghost:disabled{ opacity:.55; cursor:default; }
+  .btn-warn{ background:var(--warning-wash); color:var(--warning); }
+  .btn-warn:hover{ filter:brightness(1.08); }
+  .btn-good{ background:var(--good-wash); color:var(--good); }
+  .btn-good:hover{ filter:brightness(1.08); }
+  .btn-danger{ background:transparent; color:var(--danger); }
+  .btn-danger:hover{ background:var(--danger-wash); }
+  .btn-sm{ font-size:11.5px; padding:5px 9px; border-radius:7px; }
+  .warn-note{ font-size:12px; color:var(--warning); margin-top:8px; }
+  .months-label{ font-size:12.5px; color:var(--accent-strong); font-weight:600; margin:0 0 18px; }
+
+  .weekly-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .weekly-table th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-secondary); font-weight:600; padding:6px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  .weekly-table td{ padding:8px 10px; border-bottom:1px solid var(--border); }
+  .weekly-table tr:last-child td{ border-bottom:none; }
+  @media (max-width:560px){
+    .weekly-table{ font-size:12px; }
+    .weekly-table th, .weekly-table td{ padding:6px 6px; }
+  }
+
+  /* client groups */
+  details.cm-group{ border:1px solid var(--border); border-radius:10px; margin-bottom:8px; overflow:hidden; }
+  details.cm-group + details.cm-group{ margin-top:8px; }
+  details.cm-group summary{
+    list-style:none; cursor:pointer; padding:10px 14px; display:flex; align-items:center; gap:10px;
+    background:var(--surface-2); font-size:13.5px; font-weight:600;
+  }
+  details.cm-group summary::-webkit-details-marker{ display:none; }
+  details.cm-group summary::before{ content:"▸"; color:var(--text-muted); font-size:11px; transition:transform .15s ease; }
+  details.cm-group[open] summary::before{ transform:rotate(90deg); }
+  .cm-count{ margin-left:auto; font-size:12px; color:var(--text-secondary); font-weight:500; font-variant-numeric:tabular-nums; }
+
+  .client-row{ display:flex; align-items:center; gap:10px; padding:9px 14px; flex-wrap:wrap; }
+  .client-row + .client-row{ border-top:1px solid var(--border); }
+  .client-name{ font-size:13.5px; font-weight:500; flex:1 1 160px; min-width:0; }
+  .client-sub{ font-size:11.5px; color:var(--text-muted); }
+  .client-actions{ display:flex; gap:6px; flex:none; }
+
+  .oh-row{ display:flex; align-items:flex-start; gap:10px; padding:11px 14px; flex-wrap:wrap; }
+  .oh-row + .oh-row{ border-top:1px solid var(--border); }
+  .oh-main{ flex:1 1 220px; min-width:0; }
+  .oh-name{ font-size:13.5px; font-weight:600; }
+  .oh-cm{ font-size:11.5px; color:var(--text-secondary); margin-top:1px; }
+  .oh-note{ font-size:12px; color:var(--text-secondary); margin-top:4px; font-style:italic; }
+  .oh-badge{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; background:var(--warning-wash); color:var(--warning); border-radius:5px; padding:2px 6px; margin-left:6px; }
+
+  .empty{ font-size:13px; color:var(--text-muted); padding:14px 4px; }
+
+  .roster-row{ display:flex; align-items:center; gap:10px; padding:8px 2px; flex-wrap:wrap; }
+  .roster-row + .roster-row{ border-top:1px solid var(--border); }
+  .roster-name{ font-size:13.5px; font-weight:600; flex:1 1 140px; }
+  .roster-name.inactive{ color:var(--text-muted); text-decoration:line-through; }
+  .toggle-pill{
+    font-size:11px; font-weight:600; padding:4px 10px; border-radius:999px; cursor:pointer; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-secondary);
+  }
+  .toggle-pill.active{ background:var(--good-wash); color:var(--good); border-color:transparent; }
+
+  .foot-note{ font-size:11.5px; color:var(--text-muted); margin-top:6px; line-height:1.6; }
+
+  @media (max-width:560px){
+    .stats-row{ grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .stat-value{ font-size:20px; }
+    .load-row{ grid-template-columns: 92px 1fr 100px; }
+    .recommend-banner .rb-detail{ margin-left:0; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="top-row">
+    <div>
+      <h1>MDVAC Caseload Board</h1>
+      <p class="subtitle">Live client load per case manager — add clients, put cases on hold, and see who's next for a new assignment. The team spreadsheet syncs in automatically once a week; new clients added here manually count right away.</p>
+      <p class="months-label" id="monthsLabel"></p>
+    </div>
+    <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="statusText">Connecting…</span></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-tile">
+      <div class="stat-label">Active clients</div>
+      <div class="stat-value" id="statActive">—</div>
+      <div class="stat-note" id="statActiveApplicants"></div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">On hold</div>
+      <div class="stat-value" id="statOnHold">—</div>
+      <div class="stat-note">excluded from active load</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Case managers</div>
+      <div class="stat-value" id="statCMs">—</div>
+      <div class="stat-note">taking new assignments</div>
+    </div>
+  </div>
+
+  <div class="recommend-banner" id="recommendBanner" hidden>
+    <span class="rb-label">Assign next to</span>
+    <span class="rb-names" id="rbNames">—</span>
+    <span class="rb-detail" id="rbDetail"></span>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <p class="card-title">Load per case manager</p>
+        <p class="card-caption">Active clients only — on-hold cases don't count toward the total</p>
+      </div>
+    </div>
+    <div id="loadList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <p class="card-title">Add a client</p>
+        <p class="card-caption">New cases default to whoever has the lightest active load. Counts toward everyone's active load right away — the weekly sheet sync never touches or removes manual entries.</p>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field grow">
+        <label for="f-name">Client name</label>
+        <input type="text" id="f-name" placeholder="e.g. Dela Cruz, Maria" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="f-applicants"># of applicants</label>
+        <input type="number" id="f-applicants" min="1" step="1" value="1">
+      </div>
+      <div class="field">
+        <label for="f-cm">Case manager</label>
+        <select id="f-cm"></select>
+        <div class="cm-suggestion" id="cmSuggestion"></div>
+      </div>
+      <button class="btn btn-primary" id="addClientBtn">Add client</button>
+    </div>
+    <div class="warn-note" id="assignWarnNote" hidden></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <p class="card-title">Manual additions this week</p>
+        <p class="card-caption">Clients entered directly on the board. Confirm each is in the team spreadsheet, then clear the list — it doesn't remove anyone from the board.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="clearWeeklyBtn">Clear list</button>
+    </div>
+    <div id="weeklyTableWrap"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <p class="card-title">On hold</p>
+        <p class="card-caption">Kept visible for the team, but not counted toward anyone's active load</p>
+      </div>
+    </div>
+    <div id="onHoldList"></div>
+  </div>
+
+  <details class="card" id="rosterCard" style="padding:14px 20px;">
+    <summary style="cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px;">
+      <span class="card-title" style="font-size:14px;">Manage case managers</span>
+      <span class="cm-count" id="rosterSummary" style="margin-left:auto;"></span>
+    </summary>
+    <div style="margin-top:12px;">
+      <div id="rosterList"></div>
+      <div class="form-row" style="margin-top:12px;">
+        <div class="field">
+          <label for="f-new-cm">Add case manager</label>
+          <input type="text" id="f-new-cm" placeholder="Name" autocomplete="off" style="min-width:180px;">
+        </div>
+        <button class="btn btn-ghost" id="addCmBtn">Add</button>
+      </div>
+      <p class="foot-note">Turning a case manager off hides them from new assignments and the load list, but keeps their existing clients on record.</p>
+    </div>
+  </details>
+
+  <p class="foot-note" id="seedNote"></p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var clients = null;     // array of {id, name, caseManager, applicants, onHold, onHoldNote, onHoldSince, addedManually}
+  var roster = null;      // array of {name, active}
+  var weeklyLog = null;   // {clearedAt} — everything manually added after this timestamp is "this week"
+  var db = null;
+
+  function $(id){ return document.getElementById(id); }
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+  function fmt(n){ return (n||0).toLocaleString('en-US'); }
+
+  function setStatus(online, label){
+    $('statusDot').classList.toggle('offline', !online);
+    $('statusText').textContent = label;
+  }
+
+  // ---------- rendering ----------
+
+  function activeRosterNames(){
+    if (!roster) return [];
+    return roster.filter(function(m){ return m.active !== false; }).map(function(m){ return m.name; });
+  }
+
+  // Case managers who take on lighter volume — kept eligible for new
+  // assignments, but the team as a whole shouldn't lean on them for more
+  // than a third of everyone's combined active load.
+  var LIGHT_DUTY = ["Shasha", "Sophia", "Madison"];
+
+  // Case managers who are tracked on the board (their load shows up in the
+  // list, and their clients sync in from the sheet) but should never be
+  // suggested or selected for a new assignment.
+  var NEVER_ASSIGN = ["Shanaia"];
+
+  function assignableLoads(loads){
+    return loads.filter(function(l){ return NEVER_ASSIGN.indexOf(l.name) === -1; });
+  }
+
+  function computeSuggestion(loads){
+    var eligible = assignableLoads(loads);
+    var totalActive = eligible.reduce(function(sum,l){ return sum + l.active; }, 0);
+    var lightDutyActive = eligible.filter(function(l){ return LIGHT_DUTY.indexOf(l.name) !== -1; })
+      .reduce(function(sum,l){ return sum + l.active; }, 0);
+    var cap = totalActive / 3;
+    var pool = (lightDutyActive < cap) ? eligible : eligible.filter(function(l){ return LIGHT_DUTY.indexOf(l.name) === -1; });
+    if (!pool.length) pool = eligible; // safety net if the whole eligible pool is light-duty
+    if (!pool.length) pool = loads; // ultimate safety net if nobody is assignable
+    var minLoad = pool.length ? Math.min.apply(null, pool.map(function(l){ return l.active; })) : 0;
+    var names = pool.filter(function(l){ return l.active === minLoad; }).map(function(l){ return l.name; });
+    return { minLoad: minLoad, names: names };
+  }
+
+  function computeLoads(){
+    var names = activeRosterNames();
+    var byName = {};
+    names.forEach(function(n){ byName[n] = { name:n, active:0, activeApplicants:0, onHold:0 }; });
+    (clients||[]).forEach(function(c){
+      if (!byName[c.caseManager]) return; // inactive/unknown CM: not shown in load list
+      if (c.onHold){
+        byName[c.caseManager].onHold += 1;
+      } else {
+        byName[c.caseManager].active += 1;
+        byName[c.caseManager].activeApplicants += (c.applicants || 1);
+      }
+    });
+    return names.map(function(n){ return byName[n]; });
+  }
+
+  function render(){
+    if (clients === null || roster === null) return; // wait for both
+
+    var loads = computeLoads();
+    var totalActive = 0, totalActiveApplicants = 0, totalOnHold = 0;
+    (clients||[]).forEach(function(c){
+      if (c.onHold) totalOnHold++;
+      else { totalActive++; totalActiveApplicants += (c.applicants||1); }
+    });
+
+    $('statActive').textContent = fmt(totalActive);
+    $('statActiveApplicants').textContent = totalActiveApplicants + ' total applicants';
+    $('statOnHold').textContent = fmt(totalOnHold);
+    $('statCMs').textContent = fmt(loads.length);
+
+    // recommendation
+    var banner = $('recommendBanner');
+    if (loads.length === 0){
+      banner.hidden = true;
+    } else {
+      var suggestion = computeSuggestion(loads);
+      banner.hidden = false;
+      $('rbNames').textContent = suggestion.names.join(', ');
+      $('rbDetail').textContent = suggestion.names.length + (suggestion.names.length>1?' case managers tied at ':' case manager at ') + suggestion.minLoad + ' active client' + (suggestion.minLoad===1?'':'s');
+    }
+
+    renderLoadList(loads);
+    renderCmSelect(loads);
+    renderWeeklyLog();
+    renderOnHold();
+    renderRoster();
+  }
+
+  function renderLoadList(loads){
+    var sorted = loads.slice().sort(function(a,b){ return a.active - b.active; });
+    var max = Math.max(1, Math.max.apply(null, sorted.map(function(l){ return l.active; })));
+    var suggestion = computeSuggestion(loads);
+    var container = $('loadList');
+    container.innerHTML = '';
+    if (!sorted.length){
+      container.appendChild(el('div','empty','No case managers taking assignments yet — add one below.'));
+      return;
+    }
+    sorted.forEach(function(l){
+      var row = el('div','load-row');
+      var cmCell = el('div','load-cm');
+      cmCell.appendChild(document.createTextNode(l.name));
+      if (suggestion.names.indexOf(l.name) !== -1){
+        var badge = el('span','badge','suggested');
+        cmCell.appendChild(badge);
+      }
+      var track = el('div','load-track');
+      var fill = el('div','load-fill');
+      fill.style.width = (l.active/max*100) + '%';
+      track.appendChild(fill);
+      var meta = el('div','load-meta');
+      var b = el('b', null, String(l.active));
+      meta.appendChild(b);
+      meta.appendChild(document.createTextNode(' active'));
+      if (l.onHold){
+        var ohSpan = el('span','oh'); ohSpan.textContent = ' · ' + l.onHold + ' on hold';
+        meta.appendChild(ohSpan);
+      }
+      row.appendChild(cmCell); row.appendChild(track); row.appendChild(meta);
+      container.appendChild(row);
+    });
+  }
+
+  function renderCmSelect(loads){
+    var sel = $('f-cm');
+    var prev = sel.value;
+    sel.innerHTML = '';
+    var eligible = assignableLoads(loads);
+    var sorted = eligible.slice().sort(function(a,b){ return a.active - b.active; });
+    var suggestion = computeSuggestion(loads);
+    sorted.forEach(function(l){
+      var opt = document.createElement('option');
+      opt.value = l.name;
+      opt.textContent = l.name + ' (' + l.active + ' active' + (suggestion.names.indexOf(l.name)!==-1?' · suggested':'') + ')';
+      sel.appendChild(opt);
+    });
+    if (prev && sorted.some(function(l){ return l.name===prev; })){
+      sel.value = prev;
+    } else if (suggestion.names.length){
+      sel.value = suggestion.names[0];
+    }
+
+    var suggestionEl = $('cmSuggestion');
+    if (sorted.length){
+      suggestionEl.textContent = 'Suggested: ' + suggestion.names.join(', ') + ' (' + suggestion.minLoad + ' active client' + (suggestion.minLoad===1?'':'s') + ')';
+    } else {
+      suggestionEl.textContent = '';
+    }
+
+    updateAssignWarning();
+  }
+
+  function updateAssignWarning(){
+    var loads = computeLoads();
+    var sel = $('f-cm').value;
+    var note = $('assignWarnNote');
+    var suggestionEl = $('cmSuggestion');
+    if (!sel || !loads.length){ note.hidden = true; return; }
+    var chosen = loads.find(function(l){ return l.name===sel; });
+    var suggestion = computeSuggestion(loads);
+    var isSuggested = !!(chosen && suggestion.names.indexOf(chosen.name) !== -1);
+    suggestionEl.classList.toggle('match', isSuggested);
+    if (chosen && !isSuggested){
+      note.hidden = false;
+      note.textContent = chosen.name + ' has ' + chosen.active + ' active client' + (chosen.active===1?'':'s') + ' right now — ' + suggestion.names.join(', ') + ' ' + (suggestion.names.length>1?'are':'is') + ' the better pick at the moment. You can still continue if there\'s a reason.';
+    } else {
+      note.hidden = true;
+    }
+  }
+
+  function renderWeeklyLog(){
+    var container = $('weeklyTableWrap');
+    container.innerHTML = '';
+    var clearedAt = (weeklyLog && weeklyLog.clearedAt) || '1970-01-01T00:00:00.000Z';
+    var list = (clients||[]).filter(function(c){
+      return c.addedManually && (c.createdAt || '') > clearedAt;
+    }).sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+
+    if (!list.length){
+      container.appendChild(el('div','empty','No manual additions since the list was last cleared.'));
+      return;
+    }
+
+    var table = document.createElement('table');
+    table.className = 'weekly-table';
+    var thead = document.createElement('thead');
+    var headRow = document.createElement('tr');
+    ['Name of applicant','Date added','# of applicants','Case manager'].forEach(function(h){
+      headRow.appendChild(el('th', null, h));
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    list.forEach(function(c){
+      var tr = document.createElement('tr');
+      var d = c.createdAt ? new Date(c.createdAt) : null;
+      var dateStr = (d && !isNaN(d.getTime())) ? d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+      tr.appendChild(el('td', null, c.name));
+      tr.appendChild(el('td', null, dateStr));
+      tr.appendChild(el('td', null, String(c.applicants || 1)));
+      tr.appendChild(el('td', null, c.caseManager));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  function renderOnHold(){
+    var container = $('onHoldList');
+    container.innerHTML = '';
+    var list = (clients||[]).filter(function(c){ return c.onHold; })
+      .sort(function(a,b){ return (b.onHoldSince||'').localeCompare(a.onHoldSince||''); });
+    if (!list.length){
+      container.appendChild(el('div','empty','No clients on hold.'));
+      return;
+    }
+    list.forEach(function(c){
+      var row = el('div','oh-row');
+      var main = el('div','oh-main');
+      var nameLine = el('div','oh-name');
+      nameLine.appendChild(document.createTextNode(c.name));
+      var badge = el('span','oh-badge','on hold');
+      nameLine.appendChild(badge);
+      main.appendChild(nameLine);
+      var sub = c.caseManager + (c.applicants && c.applicants>1 ? '  ·  ' + c.applicants + ' applicants' : '');
+      main.appendChild(el('div','oh-cm', sub));
+      if (c.onHoldNote){
+        main.appendChild(el('div','oh-note', c.onHoldNote));
+      }
+      var actions = el('div','client-actions');
+      var backBtn = el('button','btn btn-sm btn-good','Reactivate');
+      backBtn.addEventListener('click', function(){ reactivateClient(c); });
+      var delBtn = el('button','btn btn-sm btn-danger','Remove');
+      delBtn.addEventListener('click', function(){ removeClient(c); });
+      actions.appendChild(backBtn); actions.appendChild(delBtn);
+      row.appendChild(main); row.appendChild(actions);
+      container.appendChild(row);
+    });
+  }
+
+  function renderRoster(){
+    var container = $('rosterList');
+    container.innerHTML = '';
+    var list = (roster||[]).slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+    $('rosterSummary').textContent = list.filter(function(m){return m.active!==false;}).length + ' active of ' + list.length;
+    list.forEach(function(m){
+      var row = el('div','roster-row');
+      var name = el('div', 'roster-name' + (m.active===false?' inactive':''), m.name);
+      var pill = el('button','toggle-pill' + (m.active!==false?' active':''), m.active!==false ? 'Taking assignments' : 'Not assigning');
+      pill.addEventListener('click', function(){ toggleRosterActive(m.name); });
+      row.appendChild(name); row.appendChild(pill);
+      container.appendChild(row);
+    });
+  }
+
+  // ---------- months window (top-of-page label) ----------
+
+  var MONTH_NAMES = ['January','February','March','April','May','June','July',
+    'August','September','October','November','December'];
+
+  function activeMonthWindow(){
+    var now = new Date();
+    var y = now.getFullYear(), m = now.getMonth();
+    var pm = m - 1, py = y;
+    if (pm < 0){ pm = 11; py = y - 1; }
+    return {
+      cur: MONTH_NAMES[m] + ' ' + y,
+      prev: MONTH_NAMES[pm] + ' ' + py
+    };
+  }
+
+  function setMonthsLabel(){
+    var w = activeMonthWindow();
+    $('monthsLabel').textContent = 'Showing case assignments for ' + w.prev + ' and ' + w.cur + '.';
+  }
+
+  // ---------- db actions ----------
+
+  function addClient(){
+    var name = $('f-name').value.trim();
+    var applicants = parseInt($('f-applicants').value, 10) || 1;
+    var cm = $('f-cm').value;
+    if (!name || !cm) return;
+    db.collection('clients').add({
+      name: name,
+      caseManager: cm,
+      applicants: applicants,
+      onHold: false,
+      onHoldNote: '',
+      onHoldSince: null,
+      addedManually: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }).then(function(){
+      $('f-name').value = '';
+      $('f-applicants').value = '1';
+    }).catch(function(e){ console.error('add client failed', e); });
+  }
+
+  function clearWeeklyLog(){
+    if (!window.confirm('Clear the manual-additions list?\n\nMake sure everyone on it is already recorded in the team spreadsheet first. This only resets this tracking list — it does not remove any clients from the board.')) return;
+    db.doc('config/weeklyLog').set({ clearedAt: new Date().toISOString() }).catch(function(e){ console.error('clear weekly log failed', e); });
+  }
+
+  function reactivateClient(client){
+    db.collection('clients').doc(client.id).update({
+      onHold: false,
+      onHoldNote: '',
+      onHoldSince: null,
+      updatedAt: new Date().toISOString()
+    }).catch(function(e){ console.error('reactivate failed', e); });
+  }
+
+  function removeClient(client){
+    if (!window.confirm('Remove "' + client.name + '" from the board? This can\'t be undone.')) return;
+    db.collection('clients').doc(client.id).delete().catch(function(e){ console.error('delete failed', e); });
+  }
+
+  function toggleRosterActive(name){
+    var next = (roster||[]).map(function(m){
+      if (m.name === name) return { name: m.name, active: m.active === false ? true : false };
+      return m;
+    });
+    db.doc('config/roster').set({ members: next }).catch(function(e){ console.error('roster toggle failed', e); });
+  }
+
+  function addCaseManager(){
+    var name = $('f-new-cm').value.trim();
+    if (!name) return;
+    var exists = (roster||[]).some(function(m){ return m.name.toLowerCase() === name.toLowerCase(); });
+    if (exists){ $('f-new-cm').value=''; return; }
+    var next = (roster||[]).concat([{ name: name, active: true }]);
+    db.doc('config/roster').set({ members: next }).then(function(){
+      $('f-new-cm').value = '';
+    }).catch(function(e){ console.error('add cm failed', e); });
+  }
+
+  // ---------- wiring ----------
+
+  $('addClientBtn').addEventListener('click', addClient);
+  $('f-name').addEventListener('keydown', function(e){ if (e.key==='Enter') addClient(); });
+  $('f-cm').addEventListener('change', updateAssignWarning);
+  $('clearWeeklyBtn').addEventListener('click', clearWeeklyLog);
+  $('addCmBtn').addEventListener('click', addCaseManager);
+  $('f-new-cm').addEventListener('keydown', function(e){ if (e.key==='Enter') addCaseManager(); });
+
+  setMonthsLabel();
+
+  $('seedNote').textContent = 'The team spreadsheet syncs into this board automatically once a week (Sundays). During the week, only clients added manually here show up right away — they count toward everyone\'s active load immediately, and the weekly sync never touches or removes them. Applicant counts default to 1 where the source sheet didn\'t track them. Shanaia is tracked for visibility but isn\'t offered for new assignments.';
+
+  async function boot(){
+    var claudeDb = (window.claude && window.claude.use) ? await window.claude.use('db') : null;
+    if (!claudeDb){
+      setStatus(false, 'Live sync unavailable in this view');
+      return;
+    }
+    db = claudeDb;
+    setStatus(true, 'Synced');
+
+    db.collection('clients').onSnapshot(function(snap){
+      clients = snap.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); });
+      render();
+    }, function(err){
+      console.error('clients subscription error', err);
+      setStatus(false, 'Connection lost');
+    });
+
+    db.doc('config/roster').onSnapshot(function(snap){
+      var data = snap.data();
+      roster = (data && Array.isArray(data.members)) ? data.members : [];
+      render();
+    }, function(err){
+      console.error('roster subscription error', err);
+      setStatus(false, 'Connection lost');
+    });
+
+    db.doc('config/weeklyLog').onSnapshot(function(snap){
+      weeklyLog = snap.data() || {};
+      render();
+    }, function(err){
+      console.error('weeklyLog subscription error', err);
+    });
+  }
+
+  if (window.claude && window.claude.hot && window.claude.hot.ready){
+    window.claude.hot.ready(boot);
+  } else {
+    boot();
+  }
+})();
+</script>
